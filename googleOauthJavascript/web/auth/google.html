@@ -1,0 +1,168 @@
+<html>
+<head>
+	<title>구글 OAuth 테스트</title>
+	<!-- jQuery -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+	<!-- Bootstrap -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+</head>
+
+<script src="/lib/hello.all.js"></script>
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script>
+
+// 인증 초기화
+hello.init({
+	google: '당신의 구글 OAuth 앱 아이디 (72자)'
+}, {redirect_uri: '/auth/callbackGoogle'});
+// 구글 콘솔에서 승인된 리디렉션 URL의 부분을 입력.
+
+// 구글 로그인 // 로그인 한 후에 바로 내 정보를 호출
+function authGoogle(){
+	hello('google').login({scope: 'email'}).then(function(auth) {
+		hello(auth.network).api('/me').then(function(r) {
+			accessToken = auth.authResponse.access_token;
+			getGoogleMe();
+		});
+	});
+}
+
+// 구글에서 내 정보 로드
+function getGoogleMe(){  //에이피아이에서 로직이 다 돌고 콜백 URL로 돌아오면 이 함수를 실행시키라는거 같애.이 함수는 제이슨 으로 된 정보를 뽑아내는 함수같아 아마도
+	hello('google').api('me').then(
+		function(json) {
+			console.log("정보: ", json)
+			console.log("이름: ", json.name)
+			console.log("이메일: ", json.email)
+			console.log("썸네일: ", json.thumbnail)
+			console.log("고유id: ", json.id)
+			var jsondata = json;
+			//GET으로 보낸건 여기서 끝이야
+
+			$.ajax({ //서버와 통신하는애(url로 이동하겠다)
+				type : 'POST', //중요한정보, 긴 정보는 post방식이 적합해
+				url: '/theend',
+				data: {json:jsondata}, //(url)입력한 값을 파라미터로 url을 자동으로 들어가게 한다.
+				success: function(response) {
+				// console.log(response['email']);
+				console.log(response);
+				$(".container").html("");
+				// console.log(Object.key(response));
+				// console.log(JSON.stringify(response));
+				// var fuckingjson = JSON.stringify(response);
+				// var json2 = JSON.parse(response[0]);
+				if(response == ""){
+					console.log("No data found");
+					alert("No Matchin ID Found");
+					window.location.replace("/");
+					return;
+				}
+				var json3 = Object.values(response[0]);
+				console.log(json3);
+				console.log(typeof(json3)); //values는 array로
+
+				// ====================테이블 생성 ====== html동적 태그
+				var footer = document.createElement("DIV");
+				footer.id = "this-is-footer";
+				footer.className = "this-is-footer-class";
+				footer.innerHTML =['<table border="1" id="list_table">',
+													"<colgroup>",
+													'<col style="width:80px;">',
+													'<col style="width:80px;">',
+													'<col style="width:80px;">',
+													'<col style="width:80px;">',
+													'<col style="width:80px;">',
+													'<col style="width:80px;">',
+													'<col style="width:80px;">',
+													'<col style="width:80px;">',
+													'</colgroup>',
+													'<thead>',
+													'<tr>',
+													'<th>이메일</th>',
+													'<th>이름</th>',
+													'<th>학번</th>',
+													'<th>생년월일</th>',
+													'<th>NODEJS</th>',
+													'<th>JAVA</th>',
+													'<th>DB</th>',
+													'<th>PYTHON</th>',
+													'</tr>',
+													'<tr id = "tr2">',
+													'<th id = "id0"> </th>',
+													'<th id = "id1"> </th>',
+													'<th id = "id2"> </th>',
+													'<th id = "id3"> </th>',
+													'<th id = "id4"> </th>',
+													'<th id = "id5"> </th>',
+													'<th id = "id6"> </th>',
+													'<th id = "id7"> </th>',
+													'</tr>',
+													'</thead>',
+													'</table>'
+														].join("");
+				// =====================================
+
+				$(".container").append(footer);
+				// $("#name").append(json3[1]);
+				for(var i =0;i<json3.length;i++){
+				// $('#tr2:eq('+i+')').html(json3[i]);
+				// console.log($($("#tr2").get(i)).html(json3[i]));
+				$("#id"+i).html(json3[i]);
+			}
+				// $('tr:eq(0)').append(json[0]);
+						},
+						function(e) {
+				console.log('me error : ' + e.error.message);
+	}
+})
+}
+)};
+		</script>
+		<body>
+			<div class="container">
+				<button class="btn btn-default" onclick="authGoogle()">구글인증하기</button>
+				<span id="resultsArea"></span>
+				<div id="wrapper">
+					<h2>구글아이디로 로그인 해주세요.</h2>
+
+				</div>
+		</body>
+		</html>
+
+				<!-- // console.log(typeof(fuckingjson))
+				// $(".container").html(fuckingjson);
+// 				for (var i = 0; i < Object.keys(response).length; i++) { // Object.keys(obj).length 로 반복문을 돌려서 value에 접근해도?
+// 				console.log(response[i]); // undefined 이다. -->
+<!-- var footer = document.createElement("DIV");
+footer.id = "this-is-footer";
+footer.className = "this-is-footer-class";
+footer.innerHTML =['<table border="1" id="list_table">',
+									"<colgroup>",
+									'<col style="width:70px;">',
+									'<col style="width:200px;">',
+									'<col style="width:300px;">',
+									'<col style="width:200px;">',
+									'</colgroup>',
+									'<thead>',
+									'<tr>',
+									'<th>No</th>',
+									'<th>Name</th>',
+									'<th>Birth</th>',
+									'<th>Action</th>',
+									'</tr>',
+									'</thead>',
+									'</table>'
+										].join("");
+
+				$(".container").html("이메일:" + response[0].email + '<br>' + "이름:"+response[0].NAME+ '<br>' + "학번:" + response[0].STID+ '<br>' + "생년월일"+response[0].DOB+ '<br>' + "nodejs:" + response[0].NODEJS+ '<br>' + "jaja:"+
+				response[0].JAVA+ '<br>' + "db:"+response[0].DB+ '<br>'+ "python"+response[0].PYTHON);
+
+			}
+
+			})
+		}
+
+	);
+} -->
